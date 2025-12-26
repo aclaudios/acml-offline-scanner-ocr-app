@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snap2Text – Offline Scanner</title>
+  <style>
+    :root{
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9aa4b2;
+      --accent: #22d3ee;
+      --accent-2: #a78bfa;
+      --success: #10b981;
+      --danger: #ef4444;
+      --border: #1f2937;
+    }
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 80% 0%, rgba(34,211,238,0.15), transparent 60%),
+                  radial-gradient(800px 500px at 10% 20%, rgba(167,139,250,0.12), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+    }
+
+    .appbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(0deg, rgba(17,24,39,0.8), rgba(17,24,39,0.8));
+      backdrop-filter: blur(6px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: conic-gradient(from 180deg, var(--accent), var(--accent-2), var(--accent));
+    }
+    .title { font-weight: 700; }
+    .spacer { flex: 1; }
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .icon { width: 18px; height: 18px; }
+
+    .container { display: grid; place-items: center; padding: 24px; }
+    .card {
+      width: 100%; max-width: 720px;
+      background: rgba(17,24,39,0.9);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex; justify-content: space-between;
+      padding: 18px 20px; border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-weight: 600; }
+    .hint { color: var(--muted); font-size: 13px; }
+
+    .card-body { padding: 24px; display: grid; gap: 20px; }
+
+    .capture {
+      display: grid; grid-template-columns: 56px 1fr auto;
+      align-items: center; gap: 16px;
+      padding: 16px; border: 1px dashed #334155;
+      border-radius: 14px; background: #0b1220;
+    }
+    .capture .cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: 12px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #0b1220; font-weight: 600; border: none;
+      cursor: pointer;
+    }
+
+    .preview { display: grid; gap: 12px; }
+    .doc {
+      width: 100%; aspect-ratio: 3/4;
+      background: #0d1324; border: 1px solid var(--border);
+      border-radius: 14px; display: grid; place-items: center;
+    }
+    .doc-sheet {
+      width: 92%; height: 92%; background: #f8fafc;
+      border-radius: 12px; padding: 18px;
+    }
+    .doc-lines { display: grid; gap: 10px; margin-top: 8px; }
+    .line { height: 10px; border-radius: 6px; background: #cbd5e1; }
+    .line.short { width: 60%; }
+    .line.mid { width: 80%; }
+    .line.long { width: 95%; }
+
+    .ocr {
+      background: #0b1220; border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px;
+    }
+    .ocr h3 { margin: 0 0 8px 0; font-weight: 600; }
+    .ocr pre { margin: 0; white-space: pre-wrap; color: #cbd5e1; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      background: #0b1220; position: sticky; bottom: 0;
+    }
+    .actions {
+      max-width: 720px; margin: 0 auto;
+      padding: 14px 20px; display: grid;
+      grid-template-columns: repeat(4, 1fr); gap: 12px;
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 12px; border-radius: 12px;
+      background: #111827; border: 1px solid var(--border);
+      color: var(--text); font-weight: 500; cursor: pointer;
+    }
+    .btn.primary {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #0b1220; font-weight: 700; border: none;
+    }
+    .credits {
+      text-align:center; font-size:12px; color:#9aa4b2; padding:8px;
+    }
+    .credits a { color:#9aa4b2; text-decoration:none; }
+  </style>
+</head>
+<body>
+
+  <header class="appbar">
+    <div class="logo"></div>
+    <div class="title">Snap2Text – Offline Scanner</div>
+    <div class="spacer"></div>
+    <button class="icon-btn" onclick="alert('Exit app');">Exit</button>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Document</div>
+          <div class="hint">Capture a clear and flat document for best results</div>
+        </div>
+        <button class="icon-btn" onclick="alert('Open gallery');">Gallery</button>
+      </div>
+
+      <div class="card-body">
+        <div class="capture">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+            <path d="M3 7h4l2-3h6l2 3h4v12H3z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          <div>
+            <div style="font-weight:600">Capture Document</div>
+            <div class="hint">Use the camera to scan a page</div>
+          </div>
+          <button class="cta" onclick="alert('Open camera');">Capture</button>
+        </div>
+
+        <div class="preview">
+          <div class="doc">
+            <div class="doc-sheet">
+              <div class="doc-lines">
+                <div class="line long"></div>
+                <div class="line mid"></div>
+                <div class="line long"></div>
+                <div class="line short"></div>
+                <div class="line mid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ocr">
+            <h3>Recognized Text</h3>
+            <pre id="ocrText">No text yet. Capture a document to see OCR results here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="actions">
+      <button class="btn" onclick="alert('Save PDF');">
+        Save PDF
+      </button>
+      <button class="btn" onclick="alert('Share');">
+        Share
+      </button>
+      <button class="btn" onclick="alert('Copy text');">
+        Copy Text
+      </button>
+      <button class="btn primary" onclick="alert('Exit app');">
+        Exit
+      </button>
+    </div>
+    <div class="credits">
+      © <a href="https://www.acmlsys.com" target="_blank">ACML Systems</a>
+    </div>
+  </footer>
+
+</body>
+</html>
