@@ -10,6 +10,25 @@ It uses **Tesseract OCR** embedded locally to capture text from documents withou
 - Export results to PDF.
 - Simple, single-screen UI inspired by `docs/mockup.html`.
 
+## 📄 PDF Export
+The app allows you to export recognized OCR text as PDF documents:
+
+- **Tap the "Save PDF" button** in the bottom action bar to export the OCR result.
+- PDFs are saved with a timestamped filename (e.g., `Snap2Text_20231225_143022.pdf`).
+- On **Android 10+** (API 29+), files are saved to app-specific storage: `/Android/data/com.acmlsys.snap2text/files/Documents/`
+- On **Android 9 and below**, files are saved to: `/Documents/`
+- The PDF contains:
+  - Title: "Snap2Text OCR Result"
+  - Timestamp of when the PDF was generated
+  - Recognized text with proper formatting and text wrapping
+- After saving, the app will attempt to open the PDF with an available PDF viewer.
+- All text is formatted on A4-sized pages (595x842 points) with 40-point margins.
+
+### Accessing Exported PDFs
+- **Android 10+**: Use the Files app → "Documents" folder in the app's directory
+- **Android 9 and below**: Navigate to the device's Documents folder
+- PDFs can be shared or viewed using any PDF reader app installed on the device
+
 ## 🎨 UI/UX Design
 The app features a minimalist dark-themed interface with:
 - **Color Palette**: Dark gradient background (#0F172A) with cyan (#22D3EE) and purple (#A78BFA) accents
