@@ -33,4 +33,5 @@
     <string name="logo_description">App logo</string>
     <string name="camera_icon_description">Camera icon</string>
     <string name="document_preview_description">Document preview</string>
+    <string name="captured_image_description">Captured document image</string>
 </resources>

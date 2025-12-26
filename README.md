@@ -5,10 +5,33 @@ It uses **Tesseract OCR** embedded locally to capture text from documents withou
 
 ## ✨ Features
 - Capture documents using the Android camera.
+- Select images from the device gallery.
 - Process images with offline OCR (Tesseract).
 - Display recognized text instantly.
 - Export results to PDF.
+- Share or copy recognized text.
 - Simple, single-screen UI inspired by `docs/mockup.html`.
+
+## 📸 Using the Scanner
+
+### Capturing Documents
+1. **Launch the app** - Grant camera permissions when prompted.
+2. **Tap "Capture"** - Opens the device camera.
+3. **Take a photo** - Capture a clear, flat document with good lighting.
+4. **Automatic OCR** - The app processes the image and displays recognized text.
+5. **View Results** - The captured image appears in the document preview area, and recognized text is displayed below.
+
+### Selecting from Gallery
+1. **Tap "Gallery"** - Opens the device photo gallery.
+2. **Select an image** - Choose a document photo from your gallery.
+3. **Automatic OCR** - The app processes the image and displays recognized text.
+
+### Tips for Best Results
+- Use good lighting and avoid shadows on the document.
+- Ensure the document is flat and not wrinkled.
+- Position the camera directly above the document (not at an angle).
+- Use high-contrast documents (dark text on white background works best).
+- Keep the camera steady to avoid blurry images.
 
 ## 📄 PDF Export
 The app allows you to export recognized OCR text as PDF documents:
@@ -28,6 +51,17 @@ The app allows you to export recognized OCR text as PDF documents:
 - **Android 10+**: Use the Files app → "Documents" folder in the app's directory
 - **Android 9 and below**: Navigate to the device's Documents folder
 - PDFs can be shared or viewed using any PDF reader app installed on the device
+
+## 🔍 OCR Technology
+The app uses **Tesseract OCR**, an open-source optical character recognition engine:
+- **Fully Offline**: All OCR processing happens on-device with no internet connection required.
+- **Trained Data**: Uses the English language trained data (eng.traineddata) embedded in the app.
+- **Library**: Implements the `tess-two` library (Android wrapper for Tesseract OCR 9.1.0).
+- **Processing**: 
+  - Images are automatically rotated based on EXIF orientation data.
+  - Tesseract extracts text from the processed bitmap image.
+  - Recognized text is displayed in the UI and can be exported to PDF or shared.
+- **Supported Languages**: Currently English only (additional language packs can be added).
 
 ## 🎨 UI/UX Design
 The app features a minimalist dark-themed interface with:
