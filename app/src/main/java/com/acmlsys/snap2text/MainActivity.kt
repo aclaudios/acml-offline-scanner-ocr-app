@@ -76,11 +76,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Exit buttons (both toolbar and bottom action)
-        val exitClickListener = {
-            finishAffinity()
-        }
-        btnExit.setOnClickListener { exitClickListener() }
-        btnExitToolbar.setOnClickListener { exitClickListener() }
+        btnExit.setOnClickListener { finishAffinity() }
+        btnExitToolbar.setOnClickListener { finishAffinity() }
 
         // Credits link
         credits.setOnClickListener {

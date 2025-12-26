@@ -21,6 +21,7 @@
     <color name="doc_bg">#0D1324</color>
     <color name="doc_sheet">#F8FAFC</color>
     <color name="doc_line">#CBD5E1</color>
+    <color name="border_dashed">#334155</color>
     
     <!-- System colors -->
     <color name="black">#000000</color>
