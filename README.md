@@ -96,14 +96,221 @@ The development is tracked via GitHub Issues:
 - Android UI preview: [`docs/android-ui-preview.html`](docs/android-ui-preview.html)
 - README and CHANGELOG are updated with each issue.
 
-## 🛠️ Building
-To build the Android application:
-```bash
-./gradlew assembleDebug  # Build debug APK
-./gradlew assembleRelease  # Build release APK
+## 🔧 Android Environment Setup
+
+### Prerequisites
+To build and run this Android application, you need:
+
+1. **Java Development Kit (JDK)**
+   - JDK 8 or higher (JDK 11 or 17 recommended)
+   - Verify: `java -version`
+
+2. **Android Studio** (recommended) or **Android SDK Command-line Tools**
+   - Download from: https://developer.android.com/studio
+   - Android Studio includes:
+     - Android SDK
+     - Android SDK Platform-Tools (adb, etc.)
+     - Android SDK Build-Tools
+     - Android Emulator
+
+3. **Android SDK Requirements**
+   - **Compile SDK**: API 34 (Android 14)
+   - **Min SDK**: API 24 (Android 7.0)
+   - **Target SDK**: API 34 (Android 14)
+   - **Build Tools**: 34.0.0 or higher
+
+### Setting up Android SDK
+
+#### Option 1: Using Android Studio (Recommended)
+1. Install Android Studio from https://developer.android.com/studio
+2. Launch Android Studio
+3. Go to **Tools → SDK Manager**
+4. In the **SDK Platforms** tab:
+   - Check **Android 14.0 (API 34)** - for target SDK
+   - Check **Android 7.0 (API 24)** - for minimum SDK support
+5. In the **SDK Tools** tab, ensure these are installed:
+   - Android SDK Build-Tools 34.0.0
+   - Android SDK Platform-Tools
+   - Android Emulator (if testing on emulator)
+   - Android SDK Command-line Tools
+6. Click **Apply** to install
+
+#### Option 2: Using Command-line Tools
+1. Download Android SDK command-line tools from https://developer.android.com/studio#command-tools
+2. Extract to a directory (e.g., `~/Android/Sdk`)
+3. Set `ANDROID_HOME` environment variable:
+   ```bash
+   export ANDROID_HOME=~/Android/Sdk
+   export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+   export PATH=$PATH:$ANDROID_HOME/platform-tools
+   ```
+4. Accept licenses:
+   ```bash
+   sdkmanager --licenses
+   ```
+5. Install required SDK components:
+   ```bash
+   sdkmanager "platform-tools" "platforms;android-24" "platforms;android-34" "build-tools;34.0.0"
+   ```
+
+### Gradle Wrapper
+This project includes a Gradle wrapper (`gradlew` / `gradlew.bat`) that automatically downloads the correct Gradle version (8.1.1).
+
+**No need to install Gradle separately** - just use the wrapper scripts:
+- **Linux/Mac**: `./gradlew`
+- **Windows**: `gradlew.bat`
+
+The first time you run the wrapper, it will download Gradle automatically.
+
+### Required Permissions
+The app requires the following Android permissions (configured in `AndroidManifest.xml`):
+
+1. **CAMERA** (runtime permission)
+   - Required for capturing document images
+   - User must grant permission at runtime
+   - App will prompt user on first use
+
+2. **WRITE_EXTERNAL_STORAGE** (for Android 9 and below)
+   - Required for saving PDF files
+   - Automatically granted on Android 10+ (scoped storage)
+   - Only needed for API 28 and below
+
+3. **READ_EXTERNAL_STORAGE** (for Android 9 and below)
+   - Required for selecting images from gallery
+   - Automatically granted on Android 10+ (scoped storage)
+   - Only needed for API 28 and below
+
+### Project Structure
+```
+acml-offline-scanner-ocr-app/
+├── app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/acmlsys/snap2text/
+│   │   │   │   └── MainActivity.kt          # Main application code
+│   │   │   ├── res/                          # Android resources
+│   │   │   │   ├── layout/                   # UI layouts
+│   │   │   │   ├── drawable/                 # Icons and graphics
+│   │   │   │   └── values/                   # Strings, colors, themes
+│   │   │   ├── assets/tessdata/              # Tesseract OCR trained data
+│   │   │   └── AndroidManifest.xml           # App configuration & permissions
+│   │   └── build.gradle                      # App-level build configuration
+├── build.gradle                              # Project-level build configuration
+├── settings.gradle                           # Project settings
+├── gradlew                                   # Gradle wrapper (Unix)
+├── gradlew.bat                               # Gradle wrapper (Windows)
+└── gradle/wrapper/                           # Gradle wrapper configuration
 ```
 
-The APK will be generated in `app/build/outputs/apk/`.
+## 🛠️ Building
+
+### Building Debug APK
+The debug APK is signed with a debug keystore and is suitable for development and testing:
+
+```bash
+./gradlew assembleDebug
+```
+
+The debug APK will be generated at:
+```
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Building Release APK
+The release APK is optimized for distribution:
+
+```bash
+./gradlew assembleRelease
+```
+
+The release APK will be generated at:
+```
+app/build/outputs/apk/release/app-release.apk
+```
+
+**Note**: For production releases, you need to sign the APK with your release keystore. See [Signing Configuration](#signing-configuration) below.
+
+### Building Android App Bundle (AAB)
+Android App Bundles are the recommended publishing format for Google Play Store:
+
+```bash
+./gradlew bundleRelease
+```
+
+The AAB file will be generated at:
+```
+app/build/outputs/bundle/release/app-release.aab
+```
+
+AAB files are more efficient than APKs as Google Play generates optimized APKs for each device configuration.
+
+### Signing Configuration
+For release builds, you need to configure signing in `app/build.gradle`:
+
+```gradle
+android {
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: "path/to/your/keystore.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+```
+
+**Security Best Practices**:
+- Never commit keystore files or passwords to version control
+- Use environment variables for sensitive credentials
+- Store keystore files in a secure location outside the project directory
+- Alternatively, use `gradle.properties` (add to `.gitignore`) or CI/CD secrets
+
+Example environment variable setup:
+```bash
+export KEYSTORE_PATH=/secure/path/to/your/keystore.jks
+export KEYSTORE_PASSWORD=your-store-password
+export KEY_ALIAS=your-key-alias
+export KEY_PASSWORD=your-key-password
+```
+
+### Installing on Device
+Once built, you can install the APK on a connected device or emulator:
+
+```bash
+# Install debug APK
+adb install app/build/outputs/apk/debug/app-debug.apk
+
+# Install release APK
+adb install app/build/outputs/apk/release/app-release.apk
+
+# Install with replacement (if app is already installed)
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Clean Build
+To clean the project and remove all build artifacts:
+
+```bash
+./gradlew clean
+```
+
+### Build Variants
+The project supports the following build variants:
+- **debug**: For development and testing, includes debugging symbols
+- **release**: Optimized for production, may be signed with release keystore
+
+You can view all available tasks:
+```bash
+./gradlew tasks
+```
 
 ## 🧪 Testing
 
