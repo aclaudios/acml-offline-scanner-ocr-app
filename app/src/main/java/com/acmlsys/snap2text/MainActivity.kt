@@ -1,25 +1,44 @@
 package com.acmlsys.snap2text
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.pdf.PdfDocument
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
+import com.googlecode.tesseract.android.TessBaseAPI
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,6 +54,39 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnExitToolbar: MaterialButton
     private lateinit var ocrText: MaterialTextView
     private lateinit var credits: MaterialTextView
+    private lateinit var capturedImage: ImageView
+    private lateinit var placeholderLayout: LinearLayout
+
+    private var tessBaseAPI: TessBaseAPI? = null
+    private var currentPhotoUri: Uri? = null
+    private var currentBitmap: Bitmap? = null
+
+    // Activity result launchers
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchCamera()
+        } else {
+            showToast("Camera permission denied")
+        }
+    }
+
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && currentPhotoUri != null) {
+            processCapturedImage(currentPhotoUri!!)
+        }
+    }
+
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            processCapturedImage(it)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +94,9 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize views
         initializeViews()
+
+        // Initialize Tesseract OCR
+        initializeTesseract()
 
         // Set up button click listeners
         setupClickListeners()
@@ -57,19 +112,54 @@ class MainActivity : AppCompatActivity() {
         btnExitToolbar = findViewById(R.id.btn_exit_toolbar)
         ocrText = findViewById(R.id.ocr_text)
         credits = findViewById(R.id.credits)
+        capturedImage = findViewById(R.id.captured_image)
+        placeholderLayout = findViewById(R.id.placeholder_layout)
+    }
+
+    private fun initializeTesseract() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Copy trained data from assets to app directory if not exists
+                val tessDataPath = File(filesDir, "tessdata")
+                if (!tessDataPath.exists()) {
+                    tessDataPath.mkdirs()
+                }
+
+                val trainedDataFile = File(tessDataPath, "eng.traineddata")
+                if (!trainedDataFile.exists()) {
+                    assets.open("tessdata/eng.traineddata").use { input ->
+                        FileOutputStream(trainedDataFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                }
+
+                // Initialize Tesseract
+                tessBaseAPI = TessBaseAPI().apply {
+                    init(filesDir.absolutePath, "eng")
+                }
+
+                withContext(Dispatchers.Main) {
+                    showToast("OCR engine ready")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showToast("Error initializing OCR: ${e.message}")
+                }
+            }
+        }
     }
 
     private fun setupClickListeners() {
         // Capture button
         btnCapture.setOnClickListener {
-            showToast("Opening camera...")
-            // TODO: Implement camera capture functionality in Issue 3
+            checkCameraPermissionAndLaunch()
         }
 
         // Gallery button
         btnGallery.setOnClickListener {
-            showToast("Opening gallery...")
-            // TODO: Implement gallery selection functionality in Issue 3
+            openGallery()
         }
 
         // Save PDF button
@@ -94,6 +184,132 @@ class MainActivity : AppCompatActivity() {
         // Credits link
         credits.setOnClickListener {
             openWebsite()
+        }
+    }
+
+    private fun checkCameraPermissionAndLaunch() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                launchCamera()
+            }
+            else -> {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun launchCamera() {
+        try {
+            val photoFile = createImageFile()
+            currentPhotoUri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                photoFile
+            )
+            cameraLauncher.launch(currentPhotoUri)
+        } catch (e: Exception) {
+            showToast("Error launching camera: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    private fun openGallery() {
+        galleryLauncher.launch("image/*")
+    }
+
+    private fun createImageFile(): File {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile("JPEG_${timestamp}_", ".jpg", storageDir)
+    }
+
+    private fun processCapturedImage(uri: Uri) {
+        showToast("Processing image...")
+        
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Load and process the image
+                val bitmap = loadBitmapFromUri(uri)
+                val rotatedBitmap = correctBitmapOrientation(uri, bitmap)
+                
+                // Update UI with image
+                withContext(Dispatchers.Main) {
+                    currentBitmap = rotatedBitmap
+                    capturedImage.setImageBitmap(rotatedBitmap)
+                    capturedImage.visibility = View.VISIBLE
+                    placeholderLayout.visibility = View.GONE
+                }
+
+                // Perform OCR
+                performOCR(rotatedBitmap)
+                
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showToast("Error processing image: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun loadBitmapFromUri(uri: Uri): Bitmap {
+        return contentResolver.openInputStream(uri)?.use { inputStream ->
+            BitmapFactory.decodeStream(inputStream)
+        } ?: throw IOException("Cannot load image from URI")
+    }
+
+    private fun correctBitmapOrientation(uri: Uri, bitmap: Bitmap): Bitmap {
+        try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return bitmap
+            val exif = ExifInterface(inputStream)
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+
+            val matrix = Matrix()
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                else -> return bitmap
+            }
+
+            return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return bitmap
+        }
+    }
+
+    private fun performOCR(bitmap: Bitmap) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                tessBaseAPI?.let { api ->
+                    api.setImage(bitmap)
+                    val recognizedText = api.utF8Text ?: ""
+                    
+                    withContext(Dispatchers.Main) {
+                        if (recognizedText.isNotBlank()) {
+                            ocrText.text = recognizedText.trim()
+                            showToast("OCR completed")
+                        } else {
+                            ocrText.text = "No text recognized. Try with a clearer image."
+                            showToast("No text found")
+                        }
+                    }
+                } ?: withContext(Dispatchers.Main) {
+                    showToast("OCR engine not initialized")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showToast("OCR error: ${e.message}")
+                }
+            }
         }
     }
 
@@ -254,5 +470,10 @@ class MainActivity : AppCompatActivity() {
             // If opening fails, just show success message
             showToast("PDF saved successfully")
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        tessBaseAPI?.end()
     }
 }

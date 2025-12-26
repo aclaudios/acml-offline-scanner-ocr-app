@@ -215,6 +215,7 @@
                             android:padding="@dimen/padding_large">
 
                             <LinearLayout
+                                android:id="@+id/placeholder_layout"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_margin="@dimen/spacing_medium"
@@ -255,6 +256,16 @@
                                     android:background="@color/doc_line" />
 
                             </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/captured_image"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/spacing_medium"
+                                android:adjustViewBounds="true"
+                                android:scaleType="centerInside"
+                                android:visibility="gone"
+                                android:contentDescription="@string/captured_image_description" />
 
                         </FrameLayout>
 
