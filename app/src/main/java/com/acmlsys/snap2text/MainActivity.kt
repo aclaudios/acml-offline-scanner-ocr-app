@@ -259,8 +259,12 @@ class MainActivity : AppCompatActivity() {
         var bitmap: Bitmap? = null
         var orientation = ExifInterface.ORIENTATION_NORMAL
         
+        // Note: We open the input stream twice because ExifInterface consumes the stream
+        // and we cannot rewind it for BitmapFactory. This is a necessary tradeoff for
+        // proper orientation handling.
+        
+        // First pass: Read EXIF orientation data
         contentResolver.openInputStream(uri)?.use { inputStream ->
-            // Read EXIF data
             val exif = ExifInterface(inputStream)
             orientation = exif.getAttributeInt(
                 ExifInterface.TAG_ORIENTATION,
@@ -268,7 +272,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
         
-        // Load bitmap
+        // Second pass: Load bitmap
         contentResolver.openInputStream(uri)?.use { inputStream ->
             bitmap = BitmapFactory.decodeStream(inputStream)
         }
@@ -280,6 +284,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
+        // If no rotation needed, return original bitmap
+        if (orientation == ExifInterface.ORIENTATION_NORMAL || 
+            orientation == ExifInterface.ORIENTATION_UNDEFINED) {
+            return bitmap
+        }
+        
         val matrix = Matrix()
         when (orientation) {
             ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
@@ -289,7 +299,12 @@ class MainActivity : AppCompatActivity() {
         }
         
         return try {
-            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            // Recycle original bitmap if a new one was created
+            if (rotatedBitmap != bitmap) {
+                bitmap.recycle()
+            }
+            rotatedBitmap
         } catch (e: Exception) {
             e.printStackTrace()
             bitmap
