@@ -251,10 +251,10 @@ For release builds, you need to configure signing in `app/build.gradle`:
 android {
     signingConfigs {
         release {
-            storeFile file("path/to/your/keystore.jks")
-            storePassword "your-store-password"
-            keyAlias "your-key-alias"
-            keyPassword "your-key-password"
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: "path/to/your/keystore.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
         }
     }
     buildTypes {
@@ -267,7 +267,19 @@ android {
 }
 ```
 
-**Security Note**: Never commit keystore files or passwords to version control. Use environment variables or a separate secure configuration file.
+**Security Best Practices**:
+- Never commit keystore files or passwords to version control
+- Use environment variables for sensitive credentials
+- Store keystore files in a secure location outside the project directory
+- Alternatively, use `gradle.properties` (add to `.gitignore`) or CI/CD secrets
+
+Example environment variable setup:
+```bash
+export KEYSTORE_PATH=/secure/path/to/your/keystore.jks
+export KEYSTORE_PASSWORD=your-store-password
+export KEY_ALIAS=your-key-alias
+export KEY_PASSWORD=your-key-password
+```
 
 ### Installing on Device
 Once built, you can install the APK on a connected device or emulator:
