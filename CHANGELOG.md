@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0] - Basic Android Testing Documentation
+- Added comprehensive testing instructions section to README.
+- Documented manual testing procedures for Android emulator (AVD).
+- Documented manual testing procedures for physical Android devices.
+- Included step-by-step instructions for testing image capture functionality.
+- Included step-by-step instructions for testing OCR functionality.
+- Included step-by-step instructions for testing PDF export functionality.
+- Added testing instructions for share, copy, and exit features.
+- Documented prerequisites and setup steps for both emulator and physical device testing.
+- Added common issues and troubleshooting section for testing scenarios.
+- Included performance expectations for OCR and PDF generation.
+- Added comprehensive testing checklist for both emulator and physical devices.
+- Documented best practices for OCR testing (lighting, document positioning, text clarity).
+- Added ADB commands for verifying PDF creation and retrieving files.
+- Included instructions for loading sample images into emulator for testing.
+- Updated CHANGELOG with testing documentation entry.
+
 ## [0.4.0] - Offline OCR Implementation
 - Integrated Tesseract OCR engine for offline text recognition (tess-two library v9.1.0).
 - Implemented camera capture functionality with permission handling.
