@@ -183,8 +183,8 @@ class MainActivity : AppCompatActivity() {
             datePaint.color = Color.GRAY
             datePaint.textSize = 10f
             datePaint.isAntiAlias = true
-            val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-            val timestamp = dateFormat.format(Date())
+            val readableDateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+            val timestamp = readableDateFormat.format(Date())
             canvas.drawText(timestamp, 40f, 85f, datePaint)
 
             // Draw text content
@@ -195,13 +195,15 @@ class MainActivity : AppCompatActivity() {
 
             pdfDocument.finishPage(page)
 
-            // Save PDF to file
-            val fileName = "Snap2Text_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.pdf"
+            // Save PDF to file with timestamped filename
+            val filenameDateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+            val fileName = "Snap2Text_${filenameDateFormat.format(Date())}.pdf"
             val file = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Android 10+ - use scoped storage
+                // Android 10+ - use scoped storage (app-specific directory, no permission needed)
                 File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
             } else {
-                // Android 9 and below
+                // Android 9 and below - use public Documents directory
+                // Note: WRITE_EXTERNAL_STORAGE permission is already declared in AndroidManifest.xml
                 @Suppress("DEPRECATION")
                 File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), fileName)
             }
