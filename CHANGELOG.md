@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0] - Local Android Emulator Support
+- Configured app to run on Android emulator (AVD) without installation restrictions.
+- Changed camera hardware requirement from required to optional in AndroidManifest.xml.
+- Enables installation on emulators with or without camera support.
+- Camera permission still requested at runtime for full functionality.
+- Comprehensive emulator testing documentation already available in README.
+- Documented emulator setup instructions including AVD configuration prerequisites.
+- Documented testing procedures for image capture, gallery selection, OCR, and PDF export in emulator.
+- Included troubleshooting guide for common emulator issues.
+- Added performance expectations for emulator environment.
+- Platform section in README now explicitly mentions emulator support.
+
 ## [0.5.0] - Basic Android Testing Documentation
 - Added comprehensive testing instructions section to README.
 - Documented manual testing procedures for Android emulator (AVD).
