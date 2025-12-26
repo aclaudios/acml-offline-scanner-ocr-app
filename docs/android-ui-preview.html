@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snap2Text Android UI Preview</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9aa4b2;
+      --accent: #22d3ee;
+      --accent-2: #a78bfa;
+      --success: #10b981;
+      --danger: #ef4444;
+      --border: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: 'Roboto', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .device-frame {
+      width: 360px;
+      height: 740px;
+      background: #000;
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .screen {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      border-radius: 24px;
+      overflow-y: auto;
+      position: relative;
+    }
+    .appbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+    .logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--accent));
+      flex-shrink: 0;
+    }
+    .title {
+      font-weight: 700;
+      font-size: 14px;
+      flex: 1;
+    }
+    .icon-btn {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .container {
+      padding: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    .card-body {
+      padding: 16px;
+    }
+    .capture {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px dashed #334155;
+      border-radius: 14px;
+      background: #0b1220;
+      margin-bottom: 16px;
+    }
+    .camera-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+    .capture-content {
+      flex: 1;
+    }
+    .capture-title {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .cta {
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #0b1220;
+      font-weight: 600;
+      border: none;
+      font-size: 13px;
+    }
+    .doc {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #0d1324;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .doc-sheet {
+      width: 92%;
+      height: 92%;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .doc-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .line {
+      height: 8px;
+      border-radius: 6px;
+      background: #cbd5e1;
+    }
+    .line.short { width: 60%; }
+    .line.mid { width: 80%; }
+    .line.long { width: 95%; }
+    .ocr {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .ocr h3 {
+      margin: 0 0 6px 0;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .ocr pre {
+      margin: 0;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    .bottom-actions {
+      position: sticky;
+      bottom: 0;
+      background: #0b1220;
+      border-top: 1px solid var(--border);
+      padding: 12px;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 6px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .btn.primary {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #0b1220;
+      font-weight: 700;
+      border: none;
+    }
+    .btn-icon {
+      width: 20px;
+      height: 20px;
+    }
+    .credits {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .icon-x {
+      stroke: var(--text);
+      stroke-width: 2;
+      fill: none;
+    }
+    .icon-accent {
+      stroke: var(--accent);
+      stroke-width: 2;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="device-frame">
+    <div class="screen">
+      <div class="appbar">
+        <div class="logo"></div>
+        <div class="title">Snap2Text</div>
+        <button class="icon-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path class="icon-x" d="M18 6L6 18M6 6l12 12"/></svg>
+          Exit
+        </button>
+      </div>
+      
+      <div class="container">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Document</div>
+              <div class="hint">Capture a clear and flat document</div>
+            </div>
+            <button class="icon-btn">Gallery</button>
+          </div>
+          
+          <div class="card-body">
+            <div class="capture">
+              <svg class="camera-icon" viewBox="0 0 24 24">
+                <path class="icon-accent" d="M3 7h4l2-3h6l2 3h4v12H3z"/>
+                <circle class="icon-accent" cx="12" cy="13" r="4"/>
+              </svg>
+              <div class="capture-content">
+                <div class="capture-title">Capture Document</div>
+                <div class="hint">Use the camera to scan</div>
+              </div>
+              <button class="cta">Capture</button>
+            </div>
+            
+            <div class="doc">
+              <div class="doc-sheet">
+                <div class="doc-lines">
+                  <div class="line long"></div>
+                  <div class="line mid"></div>
+                  <div class="line long"></div>
+                  <div class="line short"></div>
+                  <div class="line mid"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="ocr">
+              <h3>Recognized Text</h3>
+              <pre>No text yet. Capture a document to see OCR results here.</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bottom-actions">
+        <div class="actions">
+          <button class="btn">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path class="icon-x" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>
+            Save PDF
+          </button>
+          <button class="btn">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path class="icon-x" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v10"/></svg>
+            Share
+          </button>
+          <button class="btn">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path class="icon-x" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2 2 2 0 002 2z"/></svg>
+            Copy
+          </button>
+          <button class="btn primary">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path style="stroke:#0b1220;stroke-width:2;fill:none;" d="M18 6L6 18M6 6l12 12"/></svg>
+            Exit
+          </button>
+        </div>
+        <div class="credits">© ACML Systems</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
