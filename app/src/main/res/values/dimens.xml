@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">12dp</dimen>
+    <dimen name="spacing_normal">16dp</dimen>
+    <dimen name="spacing_large">20dp</dimen>
+    <dimen name="spacing_xlarge">24dp</dimen>
+    
+    <!-- Padding -->
+    <dimen name="padding_small">10dp</dimen>
+    <dimen name="padding_medium">12dp</dimen>
+    <dimen name="padding_normal">16dp</dimen>
+    <dimen name="padding_large">18dp</dimen>
+    <dimen name="padding_xlarge">20dp</dimen>
+    
+    <!-- Border Radius -->
+    <dimen name="radius_small">8dp</dimen>
+    <dimen name="radius_medium">10dp</dimen>
+    <dimen name="radius_normal">12dp</dimen>
+    <dimen name="radius_large">14dp</dimen>
+    <dimen name="radius_xlarge">16dp</dimen>
+    
+    <!-- Icon Sizes -->
+    <dimen name="icon_small">18dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_large">32dp</dimen>
+    
+    <!-- Logo Size -->
+    <dimen name="logo_size">32dp</dimen>
+    
+    <!-- Card Max Width -->
+    <dimen name="card_max_width">720dp</dimen>
+    
+    <!-- Border Width -->
+    <dimen name="border_width">1dp</dimen>
+    
+    <!-- Elevation -->
+    <dimen name="elevation_card">0dp</dimen>
+</resources>

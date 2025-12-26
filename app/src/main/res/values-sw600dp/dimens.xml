@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing for tablets -->
+    <dimen name="spacing_tiny">6dp</dimen>
+    <dimen name="spacing_small">10dp</dimen>
+    <dimen name="spacing_medium">14dp</dimen>
+    <dimen name="spacing_normal">18dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">28dp</dimen>
+    
+    <!-- Padding for tablets -->
+    <dimen name="padding_small">12dp</dimen>
+    <dimen name="padding_medium">14dp</dimen>
+    <dimen name="padding_normal">18dp</dimen>
+    <dimen name="padding_large">22dp</dimen>
+    <dimen name="padding_xlarge">24dp</dimen>
+    
+    <!-- Border Radius -->
+    <dimen name="radius_small">10dp</dimen>
+    <dimen name="radius_medium">12dp</dimen>
+    <dimen name="radius_normal">14dp</dimen>
+    <dimen name="radius_large">16dp</dimen>
+    <dimen name="radius_xlarge">18dp</dimen>
+    
+    <!-- Icon Sizes -->
+    <dimen name="icon_small">20dp</dimen>
+    <dimen name="icon_medium">28dp</dimen>
+    <dimen name="icon_large">36dp</dimen>
+    
+    <!-- Logo Size -->
+    <dimen name="logo_size">36dp</dimen>
+    
+    <!-- Card Max Width -->
+    <dimen name="card_max_width">720dp</dimen>
+</resources>
