@@ -1,0 +1,2 @@
+rootProject.name = "Snap2Text"
+include ':app'

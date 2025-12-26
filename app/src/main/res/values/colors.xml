@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark theme colors from mockup.html -->
+    <color name="bg_primary">#0F172A</color>
+    <color name="bg_card">#111827</color>
+    <color name="bg_surface">#0B1220</color>
+    <color name="bg_border">#1F2937</color>
+    
+    <!-- Text colors -->
+    <color name="text_primary">#E5E7EB</color>
+    <color name="text_muted">#9AA4B2</color>
+    <color name="text_dark">#0B1220</color>
+    
+    <!-- Accent colors -->
+    <color name="accent_cyan">#22D3EE</color>
+    <color name="accent_purple">#A78BFA</color>
+    <color name="success">#10B981</color>
+    <color name="danger">#EF4444</color>
+    
+    <!-- Document preview colors -->
+    <color name="doc_bg">#0D1324</color>
+    <color name="doc_sheet">#F8FAFC</color>
+    <color name="doc_line">#CBD5E1</color>
+    
+    <!-- System colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+</resources>
