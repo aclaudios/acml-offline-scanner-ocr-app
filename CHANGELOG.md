@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.7.0] - Android Environment Configuration
+- Added Gradle wrapper (gradlew/gradlew.bat) for consistent build experience across platforms.
+- Configured Gradle wrapper to use Gradle 8.1.1, compatible with Android Gradle Plugin 8.1.0.
+- Added comprehensive Android Environment Setup section to README.
+- Documented prerequisites: JDK requirements, Android Studio, and Android SDK setup.
+- Included detailed instructions for setting up Android SDK via Android Studio and command-line tools.
+- Documented required Android SDK components: API 34 (compile), API 24 (min), Build Tools 34.0.0.
+- Documented required Android permissions: CAMERA, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE.
+- Explained runtime vs storage permissions across different Android versions.
+- Added comprehensive Building section with detailed APK and AAB generation instructions.
+- Documented debug and release build processes with expected output paths.
+- Added signing configuration guidance for release builds with security best practices.
+- Included ADB commands for installing APKs on devices and emulators.
+- Documented build variants (debug/release) and clean build procedures.
+- Added project structure overview showing key directories and files.
+- Enhanced build instructions with examples for generating APK and AAB formats.
+- All build configurations validated: compileSdk 34, minSdk 24, targetSdk 34.
+- AndroidManifest.xml properly configured with camera and storage permissions.
+- Project structure documented for easy navigation and understanding.
+- References design mockup at docs/mockup.html as per requirements.
+
 ## [0.6.0] - Local Android Emulator Support
 - Configured app to run on Android emulator (AVD) without installation restrictions.
 - Changed camera hardware requirement from required to optional in AndroidManifest.xml.
