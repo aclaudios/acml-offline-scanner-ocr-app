@@ -40,7 +40,17 @@ The development is tracked via GitHub Issues:
 
 ## 📖 Documentation
 - Design reference: [`docs/mockup.html`](docs/mockup.html)
+- Android UI preview: [`docs/android-ui-preview.html`](docs/android-ui-preview.html)
 - README and CHANGELOG are updated with each issue.
+
+## 🛠️ Building
+To build the Android application:
+```bash
+./gradlew assembleDebug  # Build debug APK
+./gradlew assembleRelease  # Build release APK
+```
+
+The APK will be generated in `app/build/outputs/apk/`.
 
 ## 🏢 Credits
 Developed by [ACML Systems](https://www.acmlsys.com).
