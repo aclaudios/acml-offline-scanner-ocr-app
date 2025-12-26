@@ -150,7 +150,7 @@ To build and run this Android application, you need:
    ```
 5. Install required SDK components:
    ```bash
-   sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+   sdkmanager "platform-tools" "platforms;android-24" "platforms;android-34" "build-tools;34.0.0"
    ```
 
 ### Gradle Wrapper
