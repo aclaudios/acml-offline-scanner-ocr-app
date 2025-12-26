@@ -11,7 +11,6 @@
 - Included troubleshooting guide for common emulator issues.
 - Added performance expectations for emulator environment.
 - Platform section in README now explicitly mentions emulator support.
-- Updated CHANGELOG with emulator support entry (Issue 5).
 
 ## [0.5.0] - Basic Android Testing Documentation
 - Added comprehensive testing instructions section to README.
