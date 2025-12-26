@@ -29,10 +29,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
 import com.googlecode.tesseract.android.TessBaseAPI
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeTesseract() {
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 // Copy trained data from assets to app directory if not exists
                 val tessDataPath = File(filesDir, "tessdata")
@@ -229,11 +229,11 @@ class MainActivity : AppCompatActivity() {
     private fun processCapturedImage(uri: Uri) {
         showToast("Processing image...")
         
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Load and process the image
-                val bitmap = loadBitmapFromUri(uri)
-                val rotatedBitmap = correctBitmapOrientation(uri, bitmap)
+                // Load image with orientation correction in one pass
+                val (bitmap, orientation) = loadBitmapWithOrientation(uri)
+                val rotatedBitmap = applyOrientation(bitmap, orientation)
                 
                 // Update UI with image
                 withContext(Dispatchers.Main) {
@@ -255,39 +255,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadBitmapFromUri(uri: Uri): Bitmap {
-        return contentResolver.openInputStream(uri)?.use { inputStream ->
-            BitmapFactory.decodeStream(inputStream)
-        } ?: throw IOException("Failed to open or decode image from URI: $uri")
+    private fun loadBitmapWithOrientation(uri: Uri): Pair<Bitmap, Int> {
+        var bitmap: Bitmap? = null
+        var orientation = ExifInterface.ORIENTATION_NORMAL
+        
+        contentResolver.openInputStream(uri)?.use { inputStream ->
+            // Read EXIF data
+            val exif = ExifInterface(inputStream)
+            orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+        }
+        
+        // Load bitmap
+        contentResolver.openInputStream(uri)?.use { inputStream ->
+            bitmap = BitmapFactory.decodeStream(inputStream)
+        }
+        
+        return Pair(
+            bitmap ?: throw IOException("Failed to decode image"),
+            orientation
+        )
     }
 
-    private fun correctBitmapOrientation(uri: Uri, bitmap: Bitmap): Bitmap {
-        try {
-            contentResolver.openInputStream(uri)?.use { inputStream ->
-                val exif = ExifInterface(inputStream)
-                val orientation = exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-                )
-
-                val matrix = Matrix()
-                when (orientation) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-                    else -> return bitmap
-                }
-
-                return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-            } ?: return bitmap
+    private fun applyOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            else -> return bitmap
+        }
+        
+        return try {
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         } catch (e: Exception) {
             e.printStackTrace()
-            return bitmap
+            bitmap
         }
     }
 
     private fun performOCR(bitmap: Bitmap) {
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 tessBaseAPI?.let { api ->
                     api.setImage(bitmap)
