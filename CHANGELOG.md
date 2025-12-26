@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0] - Offline OCR Implementation
+- Integrated Tesseract OCR engine for offline text recognition (tess-two library v9.1.0).
+- Implemented camera capture functionality with permission handling.
+- Added gallery image selection functionality.
+- Embedded English trained data (eng.traineddata) in app assets.
+- Automatic initialization of Tesseract OCR engine on app startup.
+- Copy trained data from assets to app directory on first run.
+- Image processing pipeline with EXIF orientation correction.
+- Asynchronous OCR processing using Kotlin coroutines to prevent UI blocking.
+- Display captured/selected images in the document preview area.
+- Real-time OCR text recognition and display.
+- Hide placeholder document view when image is captured.
+- Uses ActivityResultContracts for modern camera and gallery integration.
+- Implements FileProvider for secure camera image capture on Android 7.0+.
+- Added ImageView to layout for displaying captured document images.
+- Proper resource cleanup (TessBaseAPI) in onDestroy lifecycle method.
+- Updated README with comprehensive usage instructions and OCR technology details.
+- Updated CHANGELOG with OCR implementation entry.
+- Works fully offline on both Android emulators and physical devices.
+
 ## [0.3.0] - PDF Export Feature
 - Implemented PDF export functionality using Android's built-in PdfDocument API.
 - Added "Save PDF" button handler to export OCR results to PDF format.
