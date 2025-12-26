@@ -1,0 +1,79 @@
+name: Import Issues from JSON
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  repository-projects: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq and dos2unix
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq dos2unix
+
+      - name: Normalize JSON file
+        run: |
+          sed -i '1s/^\xEF\xBB\xBF//' issues.json || true
+          dos2unix issues.json || true
+
+      - name: Validate JSON
+        run: jq . issues.json > /dev/null
+
+      - name: Import issues into Project V2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_ID: "R_kgDOQvQCEA"
+        run: |
+          echo "Importando issues..."
+
+          cat issues.json | jq -c '.[]' | while read issue; do
+            title=$(echo "$issue" | jq -r '.title')
+            labels=$(echo "$issue" | jq -r '.labels | join(",")')
+
+            # 🔥 AQUI ESTÁ A CORREÇÃO:
+            # Extrai o body preservando \n como texto JSON válido
+            body_json=$(echo "$issue" | jq -r '.body' | jq -Rs '.')
+
+            echo "Criando issue: $title"
+
+            # Monta o JSON final sem destruir as quebras de linha
+            json=$(jq -n \
+              --arg t "$title" \
+              --argjson b "$body_json" \
+              --arg l "$labels" \
+              '{title: $t, body: $b, labels: ($l | split(",")) }')
+
+            # Cria a issue
+            issue_response=$(curl -s -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -d "$json" \
+              https://api.github.com/repos/aclaudios/acml-offline-scanner-ocr-app/issues)
+
+            issue_id=$(echo "$issue_response" | jq -r '.node_id')
+
+            echo "Issue criada com node_id: $issue_id"
+
+            # Adiciona ao Project V2
+            mutation=$(jq -n --arg project "$PROJECT_ID" --arg item "$issue_id" \
+              '{query: "mutation($project:ID!,$item:ID!){addProjectV2ItemById(input:{projectId:$project, contentId:$item}){item{id}}}", variables:{project:$project, item:$item}}')
+
+            curl -s -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "$mutation" \
+              https://api.github.com/graphql
+
+            echo "Issue added to Project V2"
+          done
